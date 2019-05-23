@@ -36,7 +36,7 @@ std::string shader_source= R"(
 
     precision highp float;
 
-
+		uniform int ration;
     layout(binding = 0) readonly buffer B0 {
       float elements[];
     } input_a;
@@ -54,7 +54,7 @@ std::string shader_source= R"(
       uint gid =   gl_GlobalInvocationID.x;
       float a = input_a.elements[gid];
       float b = input_b.elements[gid];
-      output_c.elements[gid] = a + b ;
+      output_c.elements[gid] = a + b + float(ration) ;
     }
 )";
 
@@ -94,6 +94,8 @@ GLuint create_program()
     }  
 
 		glUseProgram(program); 
+
+		glUniform1i(glGetUniformLocation(program, "ration"), 2);
 
     return program;
 }
@@ -206,6 +208,13 @@ void initGL() {
 }
 
 
+
+template <typename T>
+T IntegralDivideRoundUp(T n, T divisor) {
+  return (n - 1) / divisor + 1;
+}
+
+
 int main()
 {
     // start_gl();
@@ -273,11 +282,19 @@ int main()
 		memcpy(pC,p,size);
 
 		for(int i=0;i<length;i++){
-			if(pC[i] != (pA[i] + pB[i])){
+			if(pC[i] != (pA[i] + pB[i] + 2.0f)){
 					printf("Error at:%d:(%f,%f,%f)\n",i,pC[i],pA[i] ,pB[i]);
 			}
 		}
 
     printf("over！\n"); 
 
+
+	
+		for(int i=0;i<8;i++){
+			auto num_plane = IntegralDivideRoundUp(i,4);
+			auto num_full_planes = i/4;
+			printf("%d,num_plane=%d,%d\n",i,num_plane,num_full_planes);
+		}
+		
 }
